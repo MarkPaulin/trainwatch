@@ -23,7 +23,7 @@ const query string = "REPLACE INTO trains (station_code, timestamp, headcode, " 
 func scrapeTrains() {
 	ts := time.Now().Format("20060102 150405")
 
-	db, err := sql.Open("sqlite3", "trains-db.sqlite")
+	db, err := sql.Open("sqlite3", *dbPath)
 	if err != nil {
 		log.Fatalln("unable to open database", err)
 	}
