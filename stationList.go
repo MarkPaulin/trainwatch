@@ -14,11 +14,11 @@ type stationList struct {
 	}
 }
 
-func getStationList() stationList {
+func getStationList() (stationList, error) {
 	resp, err := http.Get("https://apis.opendatani.gov.uk/translink/")
 
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 
 	defer resp.Body.Close()
@@ -28,5 +28,5 @@ func getStationList() stationList {
 	var stations stationList
 	json.Unmarshal(blob, &stations)
 
-	return stations
+	return stations, nil
 }

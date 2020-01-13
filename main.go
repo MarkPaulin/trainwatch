@@ -20,25 +20,31 @@ const query string = "REPLACE INTO trains (station_code, timestamp, headcode, " 
 	"status, expected_arrive_time, expected_depart_time, delay, origin, " +
 	"destination) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-func scrapeTrains() {
+func scrapeTrains() error {
 	ts := time.Now().Format("20060102 150405")
 
 	db, err := sql.Open("sqlite3", *dbPath)
 	if err != nil {
-		log.Fatalln("unable to open database", err)
+		return err
 	}
 	defer db.Close()
 
 	statement, err := db.Prepare(query)
 	if err != nil {
-		log.Fatalln("unable to prepare statement", err)
+		return err
 	}
 	defer statement.Close()
 
-	stations := getStationList()
+	stations, err := getStationList()
+	if err != nil {
+		return err
+	}
 
 	for k := 0; k < len(stations.Stations); k++ {
-		board := getStationBoard(stations.Stations[k].Code)
+		board, err := getStationBoard(stations.Stations[k].Code)
+		if err != {
+			return err
+		}
 
 		if len(board.Service) != 0 {
 			for s := 0; s < len(board.Service); s++ {
@@ -79,7 +85,10 @@ func scrapeTrains() {
 func main() {
 	flag.Parse()
 
-	scrapeTrains()
+	err := scrapeTrains()
+	if err != nil {
+		log.Printf(err)
+	}
 
 	ticker := time.NewTicker(2 * time.Minute)
 
@@ -90,6 +99,9 @@ func main() {
 			select {
 			case <-ticker.C:
 				scrapeTrains()
+				if err != nil {
+					log.Printf(err)
+				}
 			case <-quit:
 				ticker.Stop()
 				return

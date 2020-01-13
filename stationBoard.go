@@ -133,12 +133,12 @@ type stationBoard struct {
 	} `xml:"Incident"`
 }
 
-func getStationBoard(stationCode string) stationBoard {
+func getStationBoard(stationCode string) (stationBoard, error) {
 	url := "https://apis.opendatani.gov.uk/translink/" + stationCode + ".xml"
 	resp, err := http.Get(url)
 
 	if err != nil {
-		log.Fatalln(err)
+		return err, nil
 	}
 
 	defer resp.Body.Close()
@@ -148,5 +148,5 @@ func getStationBoard(stationCode string) stationBoard {
 	var board stationBoard
 	xml.Unmarshal(blob, &board)
 
-	return board
+	return board, nil
 }
