@@ -4,15 +4,14 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"log"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
-	dbPath			= flag.String("db", "trains-db.sqlite", "Database path")
-	watchPeriod	= flag.Int("watch", 1, "Watch period (days)")
+	dbPath      = flag.String("db", "trains-db.sqlite", "Database path")
+	watchPeriod = flag.Int("watch", 1, "Watch period (days)")
 )
 
 const query string = "REPLACE INTO trains (station_code, timestamp, headcode, " +
@@ -42,7 +41,7 @@ func scrapeTrains() error {
 
 	for k := 0; k < len(stations.Stations); k++ {
 		board, err := getStationBoard(stations.Stations[k].Code)
-		if err != {
+		if err != nil {
 			return err
 		}
 
@@ -75,11 +74,12 @@ func scrapeTrains() error {
 				)
 
 				if err != nil {
-					log.Fatalln(err)
+					return err
 				}
 			}
 		}
 	}
+	return nil
 }
 
 func main() {
@@ -87,7 +87,7 @@ func main() {
 
 	err := scrapeTrains()
 	if err != nil {
-		log.Printf(err)
+		fmt.Println(err)
 	}
 
 	ticker := time.NewTicker(2 * time.Minute)
@@ -100,7 +100,7 @@ func main() {
 			case <-ticker.C:
 				scrapeTrains()
 				if err != nil {
-					log.Printf(err)
+					fmt.Println(err)
 				}
 			case <-quit:
 				ticker.Stop()
@@ -109,7 +109,7 @@ func main() {
 		}
 	}()
 
-	time.Sleep(time.Duration(*watchPeriod * 24) * time.Hour)
+	time.Sleep(time.Duration(*watchPeriod*24) * time.Hour)
 	ticker.Stop()
 	quit <- true
 	fmt.Println("Scraping complete")

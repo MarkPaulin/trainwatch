@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/xml"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -135,17 +134,19 @@ type stationBoard struct {
 
 func getStationBoard(stationCode string) (stationBoard, error) {
 	url := "https://apis.opendatani.gov.uk/translink/" + stationCode + ".xml"
+
+	var board stationBoard
+
 	resp, err := http.Get(url)
 
 	if err != nil {
-		return err, nil
+		return board, err
 	}
 
 	defer resp.Body.Close()
 
 	blob, _ := ioutil.ReadAll(resp.Body)
 
-	var board stationBoard
 	xml.Unmarshal(blob, &board)
 
 	return board, nil
